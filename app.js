@@ -13,6 +13,11 @@ app.post('/', function(req, res) {
   });
 });
 
-
-// Export your Express configuration so that it can be consumed by the Lambda handler
-module.exports = app
+if (app.get('env') === 'local') {
+  const server = http.createServer(app).listen(port, () => {
+    console.log('Server listening on port', port);
+  });
+} else {
+  // use Lambda function to handle the web requests instead of TCP port
+  module.exports = app;
+}

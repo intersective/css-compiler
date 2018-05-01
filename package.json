@@ -1,5 +1,5 @@
 {
-    "name": "express-HelloWorld",
+    "name": "css-compiler",
     "description": "Hello World ExpressJS WebService",
     "version": "0.0.1",
     "private": true,
@@ -13,6 +13,7 @@
         "supertest": "3.0.0"
     },
     "scripts": {
+        "local": "NODE_ENV=local node app.js",
         "test": "mocha --recursive tests"
     }
 }
