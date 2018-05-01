@@ -1,6 +1,6 @@
 {
     "name": "css-compiler",
-    "description": "Hello World ExpressJS WebService",
+    "description": "Compile SASS files into CSS files",
     "version": "0.0.1",
     "private": true,
     "dependencies": {
