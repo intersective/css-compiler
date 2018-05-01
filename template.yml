@@ -13,7 +13,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: index.handler
-      Runtime: nodejs6.1
+      Runtime: nodejs6.10
       Environment:
         Variables:
           NODE_ENV: production
