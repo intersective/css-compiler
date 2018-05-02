@@ -19,13 +19,17 @@ app.post('/', function(req, res) {
 	var params = {
 	  	Bucket: "css.practera.com"
  	};
- 	var da;
 	s3.listObjects(params, function(err, data) {
 	   	if (err) {
-			return console.log(err, err.stack); 
+			return res.status(401).json({
+			    'status': 'false',
+			    'err': err
+			}); 
 	   	}
-	   	console.log(data);
-	   	da = data;
+	   	return res.status(200).json({
+		    'status': 'success',
+		    'data': data
+		});
 	});
   // gulp.src(['./source/scss/practera.scss'])
   //   .pipe(sass())
@@ -33,10 +37,7 @@ app.post('/', function(req, res) {
   //     keepSpecialComments: 0
   //   }))
   //   .pipe(gulp.dest('./www/css/'))
-  res.status(200).json({
-    'status': 'success',
-    'data': da
-  });
+
 });
 
 if (app.get('env') === 'local') {

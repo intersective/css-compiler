@@ -5,6 +5,12 @@ phases:
     commands:
       # Install dependencies needed for running tests
       - npm install
+
+      # Writing these command is because when we use aws-sdk package, it will throw error:
+      # {Unable to upload artifact None referenced by CodeUri parameter of CSSCompiler resource.
+      # ZIP does not support timestamps before 1980} - 02/05/2018
+      # Error log:
+      # https://ap-southeast-2.console.aws.amazon.com/codebuild/home?region=ap-southeast-2#/builds/css-compiler:7b3e70ad-a483-4bf1-8a79-b9d63bebf5f2/view/new
       - ls $CODEBUILD_SRC_DIR
       - find $CODEBUILD_SRC_DIR/node_modules -mtime +10950 -exec touch {} +
 
