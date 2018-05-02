@@ -4,8 +4,8 @@ const app = express();
 const gulp = require('gulp');
 const sass = require('gulp-sass');
 const cleanCss = require('gulp-clean-css');
-const AWS = require('aws-sdk');
-const s3 = new AWS.S3();
+// const AWS = require('aws-sdk');
+// const s3 = new AWS.S3();
 
 const port = process.env.PORT || 8888;
 
