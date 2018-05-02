@@ -1,5 +1,6 @@
 const express = require('express');
 const http = require('http');
+const util = require('util');
 const app = express();
 const gulp = require('gulp');
 const sass = require('gulp-sass');
@@ -23,12 +24,14 @@ app.post('/', function(req, res) {
 	   	if (err) {
 			return res.status(401).json({
 			    'status': 'false',
-			    'err': err
+			    'err': err,
+			    'req': req.query
 			}); 
 	   	}
 	   	return res.status(200).json({
 		    'status': 'success',
-		    'data': data
+		    'data': data,
+		    'req': req.query
 		});
 	});
   // gulp.src(['./source/scss/practera.scss'])
