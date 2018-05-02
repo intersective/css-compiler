@@ -5,6 +5,8 @@ phases:
     commands:
       # Install dependencies needed for running tests
       - npm install
+      - ls $CODEBUILD_SRC_DIR
+      - find $CODEBUILD_SRC_DIR/node_modules -mtime +10950 -exec touch {} ;
 
       # Upgrade AWS CLI to the latest version
       - pip install --upgrade awscli

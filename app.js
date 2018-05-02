@@ -4,8 +4,8 @@ const app = express();
 const gulp = require('gulp');
 const sass = require('gulp-sass');
 const cleanCss = require('gulp-clean-css');
-// const AWS = require('aws-sdk');
-// const s3 = new AWS.S3();
+const AWS = require('aws-sdk');
+const s3 = new AWS.S3();
 
 const port = process.env.PORT || 8888;
 
@@ -16,15 +16,17 @@ app.get('/', function(req, res) {
 });
 
 app.post('/', function(req, res) {
-	// var params = {
-	//   	Bucket: "css.practera.com"
- // 	};
-	// s3.listObjects(params, function(err, data) {
-	//    	if (err) {
-	// 		return console.log(err, err.stack); 
-	//    	}
-	//    	console.log(data);
-	// });
+	var params = {
+	  	Bucket: "css.practera.com"
+ 	};
+ 	var da;
+	s3.listObjects(params, function(err, data) {
+	   	if (err) {
+			return console.log(err, err.stack); 
+	   	}
+	   	console.log(data);
+	   	da = data;
+	});
   // gulp.src(['./source/scss/practera.scss'])
   //   .pipe(sass())
   //   .pipe(cleanCss({
@@ -32,7 +34,8 @@ app.post('/', function(req, res) {
   //   }))
   //   .pipe(gulp.dest('./www/css/'))
   res.status(200).json({
-    'status': 'success'
+    'status': 'success',
+    'data': da
   });
 });
 
