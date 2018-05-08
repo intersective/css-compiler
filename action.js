@@ -10,14 +10,13 @@ const s3 = new AWS.S3();
 // Get Sass files from S3 bucket, store them in ./source/scss/
 const getSass = (res) => {
 	var params = {
-		Bucket: "css.practera.com",
-		Key: "appv1/css/practera.css"
+		Bucket: "css.practera.com"
 		// Bucket: "sass.practera.com",
 		// Key: "appv1/variables.scss"
 	  	// Bucket: "sydney-store-4",
 	  	// Key: "testDir/rc.jpg"
 	};
-	s3.getObject(params, function(err, data) {
+	s3.listObjects(params, function(err, data) {
 	   	if (err) {
 	   		return res.json(err)
 	   	}
