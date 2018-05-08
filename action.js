@@ -20,7 +20,13 @@ const getSass = (res) => {
 	   	if (err) {
 	   		return res.json(err)
 	   	}
-	   	return res.json(data)
+	   	var files = [];
+		data.Contents.forEach((element) => {
+		  files.push(element.Key);
+		});
+	   	return res.send({
+	   		"files" : files
+	   	})
 	});
 	
 }
