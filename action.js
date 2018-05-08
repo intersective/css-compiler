@@ -2,6 +2,7 @@ const gulp = require('gulp');
 const sass = require('gulp-sass');
 const cleanCss = require('gulp-clean-css');
 const AWS = require('aws-sdk');
+AWS.config.update({region: 'ap-southeast-2'});
 const async = require('async');
 const fs = require('fs');
 const s3 = new AWS.S3();
@@ -9,14 +10,20 @@ const s3 = new AWS.S3();
 // Get Sass files from S3 bucket, store them in ./source/scss/
 const getSass = (res) => {
 	var params = {
-	  	Bucket: "css.practera.com"
+		Bucket: "css.practera.com",
+		Key: "appv1/css/practera.css"
+		// Bucket: "sass.practera.com",
+		// Key: "appv1/variables.scss"
+	  	// Bucket: "sydney-store-4",
+	  	// Key: "testDir/rc.jpg"
 	};
-	s3.listObjects(params, function(err, data) {
+	s3.getObject(params, function(err, data) {
 	   	if (err) {
 	   		return res.json(err)
 	   	}
 	   	return res.json(data)
 	});
+	
 }
 
 // Compile SASS to CSS

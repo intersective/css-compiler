@@ -12,10 +12,9 @@ app.use(bodyParser.json());
 app.get('/', function(req, res) {
 	action.getSass(res)
 	// action.saveConfig({"model":"Program","model_id":4,"domain":"app.practera.com","color":"#ffe600","card":"memphis-light.png"})
-  // res.send({
-  //   "Output": "This is the get request ",
-  //   "action" : action
-  // });
+  	// res.send({
+   //  	"Output": "This is the get request "
+  	// });
 });
 
 app.post('/', function(req, res) {
