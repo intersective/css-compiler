@@ -2,44 +2,47 @@ const express = require('express');
 const http = require('http');
 const util = require('util');
 const app = express();
-const gulp = require('gulp');
-const sass = require('gulp-sass');
-const cleanCss = require('gulp-clean-css');
-const AWS = require('aws-sdk');
-const s3 = new AWS.S3();
+const bodyParser = require('body-parser');
+const async = require('async');
+const action = require('./action');
 
 const port = process.env.PORT || 8888;
+app.use(bodyParser.json());
 
 app.get('/', function(req, res) {
-  res.send({
-    "Output": "This is the get request"
-  });
+	action.getSass(res)
+	// action.saveConfig({"model":"Program","model_id":4,"domain":"app.practera.com","color":"#ffe600","card":"memphis-light.png"})
+  // res.send({
+  //   "Output": "This is the get request ",
+  //   "action" : action
+  // });
 });
 
 app.post('/', function(req, res) {
-	var params = {
-	  	Bucket: "css.practera.com"
- 	};
-	s3.listObjects(params, function(err, data) {
-	   	if (err) {
-			return res.status(401).json({
-			    'status': 'false',
-			    'err': err,
-			    'req': req.query
-			}); 
-	   	}
-	   	return res.status(200).json({
-		    'status': 'success',
-		    'data': data,
-		    'req': req.query
-		});
+	async.waterfall([
+		// (callback) => {
+		// 	action.getSass(callback)
+		// },
+		
+		(callback) => {
+			if (req.body && 
+				req.body.model && 
+				req.body.model_id && 
+				req.body.domain && 
+				req.body.color && 
+				req.body.card) {
+				// update one css
+				action.compile(req.body);
+			} else {
+				// update all css
+			}
+		}
+	])
+	
+
+	return res.status(200).json({
+	    'status': 'success'
 	});
-  // gulp.src(['./source/scss/practera.scss'])
-  //   .pipe(sass())
-  //   .pipe(cleanCss({
-  //     keepSpecialComments: 0
-  //   }))
-  //   .pipe(gulp.dest('./www/css/'))
 
 });
 
