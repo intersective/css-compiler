@@ -28,12 +28,12 @@ app.post('/', function(req, res) {
 		req.body.color && 
 		req.body.card) {
 		// update one css
-		action.compile(req.body);
+		action.compile(req.body)
 	} else {
-		// update all css
+		action.updateAll()
 	}
 	return res.status(200).json({
-	    'status': 'success'
+	    'success': true
 	});
 	
 });

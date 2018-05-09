@@ -101,7 +101,7 @@ const checkCss = (fileName, callback) => {
 // Get Sass files from S3 bucket, store them in ./source/scss/
 const getSass = (res) => {
 	var params = {
-		Bucket: "css.practera.com",
+		Bucket: "sass.practera.com",
 		MaxKeys: 10
 	};
 	s3.listObjects(params, function(err, data) {
@@ -119,7 +119,15 @@ const getSass = (res) => {
 }
 
 
-// Compile SASS to CSS
+/**
+ * 1. Compile SASS to CSS
+ * 2. Save the CSS in local 
+ * 3. Rename the css file to the correct name
+ * 4. Upload CSS to S3
+ * 
+ * @param  {Object} body [Body parameter including domain & model & model_id & color & card]
+ * @return 
+ */
 const compile = (body) => {
 	let fileName = body.domain.replace(/\./g, '_').toLowerCase() + '-' + 
 				body.model.toLowerCase() + '-' + body.model_id  + '.css';
@@ -160,16 +168,42 @@ const compile = (body) => {
 
 		// rename file
 		(callback) => {
-			fs.renameSync('./www/css/practera.css', filePath, callback)
+			fs.rename('./www/css/practera.css', filePath, callback)
+		},
+
+		// upload css file to S3
+		(callback) => {
+			fs.readFile(filePath, function (err, data) {
+			  if (err) { 
+			  	throw err; 
+			  }
+
+			  let base64data = new Buffer(data, 'binary');
+
+			  s3.putObject({
+			    Bucket: 'sass.practera.com',
+			    Key: 'appv1/css/' + fileName,
+			    Body: base64data
+			  }, callback);
+
+			});
 		}
 
 	])
 }
 
+const updateAll = () => {
 
-// Save the config to local file
+}
+
+
+/**
+ * Save the config to local file (config.json)
+ * 
+ * @param  {Object} body  [Body parameter including domain & model & model_id]
+ * @return 
+ */
 const saveConfig = (body) => {
-	
 	let filePath = './source/config.json';
 	
 	async.waterfall([
@@ -207,14 +241,12 @@ const saveConfig = (body) => {
 		}
 
 	])
-	
-
 }
 
 module.exports = {
-  getSass: getSass,
   getCss: getCss,
-  compile: compile
+  compile: compile,
+  updateAll: updateAll
 }
 
 
