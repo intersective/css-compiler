@@ -1,11 +1,15 @@
 const gulp = require('gulp');
 const sass = require('gulp-sass');
+const rename = require('gulp-rename');
 const cleanCss = require('gulp-clean-css');
 const AWS = require('aws-sdk');
 AWS.config.update({region: 'ap-southeast-2'});
 const async = require('async');
+const eachSeries = require('async/eachSeries');
 const fs = require('fs');
 const s3 = new AWS.S3();
+
+const configFile = './source/config.json'
 
 /**
  * Get the CSS according to program id & experience id & domain
@@ -98,37 +102,17 @@ const checkCss = (fileName, callback) => {
 	});
 }
 
-// Get Sass files from S3 bucket, store them in ./source/scss/
-const getSass = (res) => {
-	var params = {
-		Bucket: "sass.practera.com",
-		MaxKeys: 10
-	};
-	s3.listObjects(params, function(err, data) {
-	   	if (err) {
-	   		return res.json(err)
-	   	}
-	   	var files = [];
-		data.Contents.forEach((element) => {
-		  files.push(element.Key);
-		});
-	   	return res.send({
-	   		"files" : files
-	   	})
-	});
-}
 
 
 /**
  * 1. Compile SASS to CSS
  * 2. Save the CSS in local 
- * 3. Rename the css file to the correct name
- * 4. Upload CSS to S3
+ * 3. Upload CSS to S3
  * 
  * @param  {Object} body [Body parameter including domain & model & model_id & color & card]
  * @return 
  */
-const compile = (body) => {
+const compile = (body, callback) => {
 	let fileName = body.domain.replace(/\./g, '_').toLowerCase() + '-' + 
 				body.model.toLowerCase() + '-' + body.model_id  + '.css';
 	let filePath = './www/css/' + fileName;
@@ -148,28 +132,13 @@ const compile = (body) => {
 		    	.pipe(cleanCss({
 		      		keepSpecialComments: 0
 		    	}))
+		    	.pipe(rename(fileName))
 		    	.pipe(gulp.dest('./www/css/'))
 		    	.on('end', callback)
 
 			// save config to local file
 			saveConfig(body)
 	    },
-
-    	 // delete file if exist
-	    (callback) => {
-	    	fs.exists(filePath, function (exists) {
-				if (exists) {
-					fs.unlink(filePath, callback)
-				} else {
-					callback()
-				}
-			})
-	    },
-
-		// rename file
-		(callback) => {
-			fs.rename('./www/css/practera.css', filePath, callback)
-		},
 
 		// upload css file to S3
 		(callback) => {
@@ -181,7 +150,7 @@ const compile = (body) => {
 			  let base64data = new Buffer(data, 'binary');
 
 			  s3.putObject({
-			    Bucket: 'sass.practera.com',
+			    Bucket: 'css.practera.com',
 			    Key: 'appv1/css/' + fileName,
 			    Body: base64data
 			  }, callback);
@@ -189,13 +158,57 @@ const compile = (body) => {
 			});
 		}
 
+	], callback)
+}
+
+/**
+ * Update all css files
+ *
+ * 1. Update SASS files from S3 bucket
+ * 2. Re-compile all CSS files based on the configuration in config.json
+ * 3. Upload those CSS files to S3 bucket [included in compile()]
+ * 
+ * @return {[type]} [description]
+ */
+const updateAll = () => {
+	async.waterfall([
+		// update SASS files
+		// (callback) => {
+		// 	getSass(callback)
+		// },
+
+		// re-compile all CSS files based on config.json
+		(callback) => {
+			fs.readFile(configFile, (err, data) => {
+				let config = JSON.parse(data)
+				eachSeries(config, (modelObj, callback) => {
+					eachSeries(modelObj, (modelIdObj, callback) => {
+						eachSeries(modelIdObj, (bodyData, callback) => {
+							compile(bodyData, callback)
+						}, callback)
+					}, callback)
+				}, callback)
+			})
+		}
 	])
 }
 
-const updateAll = () => {
-
+// Get Sass files from S3 bucket, store them in ./source/scss/
+const getSass = (callback) => {
+	var params = {
+		Bucket: "sass.practera.com",
+		MaxKeys: 10
+	};
+	s3.listObjects(params, function(err, data) {
+	   	if (err) {
+	   		
+	   	}
+	   	var files = [];
+		data.Contents.forEach((element) => {
+		  files.push(element.Key);
+		});
+	});
 }
-
 
 /**
  * Save the config to local file (config.json)
@@ -204,14 +217,12 @@ const updateAll = () => {
  * @return 
  */
 const saveConfig = (body) => {
-	let filePath = './source/config.json';
-	
 	async.waterfall([
 		// create config.json if not exist
 		(callback) => {
-			fs.access(filePath, (err) => {
+			fs.access(configFile, (err) => {
 			  if (err) {
-			    fs.writeFile(filePath, '{}', callback)
+			    fs.writeFile(configFile, '{}', callback)
 			  } else {
 			  	callback()
 			  }
@@ -220,7 +231,7 @@ const saveConfig = (body) => {
 
 		// update config.json file
 		(callback) => {
-			fs.readFile(filePath, (err, data) => {
+			fs.readFile(configFile, (err, data) => {
 				let config = JSON.parse(data)
 				if (!config.hasOwnProperty(body.domain)) {
 					config[body.domain] = {
@@ -236,7 +247,7 @@ const saveConfig = (body) => {
 					config[body.domain][body.model][body.model_id] = body;
 				}
 				
-				fs.writeFile(filePath, JSON.stringify(config), callback);
+				fs.writeFile(configFile, JSON.stringify(config), callback);
 			})
 		}
 

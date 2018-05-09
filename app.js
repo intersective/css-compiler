@@ -30,6 +30,7 @@ app.post('/', function(req, res) {
 		// update one css
 		action.compile(req.body)
 	} else {
+		// update all css based on configurations stored
 		action.updateAll()
 	}
 	return res.status(200).json({
