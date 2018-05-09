@@ -10,39 +10,32 @@ const port = process.env.PORT || 8888;
 app.use(bodyParser.json());
 
 app.get('/', function(req, res) {
-	action.getSass(res)
-	// action.saveConfig({"model":"Program","model_id":4,"domain":"app.practera.com","color":"#ffe600","card":"memphis-light.png"})
-  	// res.send({
-   //  	"Output": "This is the get request "
-  	// });
+	// check query data
+	if (!req.query.domain || !req.query.experience_id || !req.query.program_id) {
+		return res.status(401).json({
+		    'status': 'error',
+		    'msg': 'missing parameters'
+		});
+	}
+	action.getCss(req.query, res)
 });
 
 app.post('/', function(req, res) {
-	async.waterfall([
-		// (callback) => {
-		// 	action.getSass(callback)
-		// },
-		
-		(callback) => {
-			if (req.body && 
-				req.body.model && 
-				req.body.model_id && 
-				req.body.domain && 
-				req.body.color && 
-				req.body.card) {
-				// update one css
-				action.compile(req.body);
-			} else {
-				// update all css
-			}
-		}
-	])
-	
-
+	if (req.body && 
+		req.body.model && 
+		req.body.model_id && 
+		req.body.domain && 
+		req.body.color && 
+		req.body.card) {
+		// update one css
+		action.compile(req.body);
+	} else {
+		// update all css
+	}
 	return res.status(200).json({
 	    'status': 'success'
 	});
-
+	
 });
 
 if (app.get('env') === 'local') {

@@ -7,15 +7,102 @@ const async = require('async');
 const fs = require('fs');
 const s3 = new AWS.S3();
 
+/**
+ * Get the CSS according to program id & experience id & domain
+ * 
+ * @param  {Object} query The query data including program id & experience id & domain
+ * @param  {Object} res   Tesponse object
+ * @return 
+ */
+const getCss = (query, res) => {
+	async.waterfall([
+		(callback) => {
+			// use program wide css, go to next step if not found
+			let fileName = query.domain.replace(/\./g, '_').toLowerCase() + 
+					'-program-' + query.program_id  + '.css';
+			checkCss(fileName, (url) => {
+				if (url) {
+					return res.status(200).json({
+					    'success': true,
+					    'url': url
+					});
+				} else {
+					callback()
+				}
+			});
+		},
+
+		(callback) => {
+			// use experience wide css, go to next step if not found
+			fileName = query.domain.replace(/\./g, '_').toLowerCase() + 
+					'-experience-' + query.experience_id  + '.css';
+			checkCss(fileName, (url) => {
+				if (url) {
+					return res.status(200).json({
+					    'success': true,
+					    'url': url
+					});
+				} else {
+					callback()
+				}
+			});
+		},
+
+		(callback) => {
+			// use default css, go to next step if not found
+			fileName = 'practera.css';
+			checkCss(fileName, (url) => {
+				if (url) {
+					return res.status(200).json({
+					    'success': true,
+					    'url': url
+					});
+				} else {
+					callback()
+				}
+			});
+		},
+
+		(callback) => {
+			// return error if no css file found
+			return res.status(200).json({
+			    'success': false,
+			    'error': 'no css file found'
+			});
+		}
+	])
+}
+
+/**
+ * Try to get CSS file
+ * Return the signed url if file found
+ * Return false if not found
+ * 
+ * @param  {String}   fileName  The file name to check for
+ * @param  {Function} callback  Callback function
+ * @return {Function}            Return callback function
+ */
+const checkCss = (fileName, callback) => {
+	var params = {
+		Bucket: "css.practera.com",
+		Key: "appv1/css/" + fileName
+	}
+	s3.headObject(params, function (err, metadata) {  
+	  if (err && err.code === 'NotFound') {  
+	    return callback(false)
+	  } else {  
+	  	// signed url will be expire after 10 minutes
+	  	params.Expires = 600
+	    return callback(s3.getSignedUrl('getObject', params));
+	  }
+	});
+}
+
 // Get Sass files from S3 bucket, store them in ./source/scss/
 const getSass = (res) => {
 	var params = {
 		Bucket: "css.practera.com",
 		MaxKeys: 10
-		// Bucket: "sass.practera.com",
-		// Key: "appv1/variables.scss"
-	  	// Bucket: "sydney-store-4",
-	  	// Key: "testDir/rc.jpg"
 	};
 	s3.listObjects(params, function(err, data) {
 	   	if (err) {
@@ -29,8 +116,8 @@ const getSass = (res) => {
 	   		"files" : files
 	   	})
 	});
-	
 }
+
 
 // Compile SASS to CSS
 const compile = (body) => {
@@ -39,6 +126,13 @@ const compile = (body) => {
 	let filePath = './www/css/' + fileName;
 
 	async.waterfall([
+		// change customised variables
+		(callback) => {
+			let variables = "$primary: " + body.color + " !default;" + 
+				"$cardImg: url('../img/backgrounds/" + body.card + "') !default;"
+		  	fs.writeFile('./source/scss/custom-variables.scss', variables, callback)
+	    },
+
 		// compile
 		(callback) => {
 		  	gulp.src(['./source/scss/practera.scss'])
@@ -119,8 +213,8 @@ const saveConfig = (body) => {
 
 module.exports = {
   getSass: getSass,
-  compile: compile,
-  saveConfig: saveConfig
+  getCss: getCss,
+  compile: compile
 }
 
 
