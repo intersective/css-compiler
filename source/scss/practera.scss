@@ -1,0 +1,14 @@
+// The path for our ionicons font files, relative to the built CSS in www/css
+$ionicons-font-path: "../lib/ionic/fonts" !default;
+
+// import scss files
+@import "custom-variables";
+@import "variables";
+@import "ionic/ionic";
+@import "bar";
+@import "button";
+@import "items";
+@import "list";
+@import "radio";
+@import "background"; // higher priority than list
+@import "version";

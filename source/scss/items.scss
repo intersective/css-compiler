@@ -1,0 +1,77 @@
+// Handle text overflow
+.item,
+.item h1,
+.item h2,
+.item h3,
+.item h4,
+.item h5,
+.item h6,
+.item p,
+.item-content,
+.item-content h1,
+.item-content h2,
+.item-content h3,
+.item-content h4,
+.item-content h5,
+.item-content h6,
+.item-content p {
+  width: 100%;
+  white-space: normal;
+}
+
+.item-margin {
+  margin: 12px 0px;
+}
+
+// customise styling of the images inside item
+.story-content {
+  img {
+    max-width: 100%;
+  }
+  ul{
+    list-style: disc;
+    padding-left: 20px;
+  }
+  ol{
+    list-style-type: decimal;
+    padding-left: 20px;
+  }
+}
+
+
+// file view and download [customised required]
+.file-view-download {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  i.icon {
+    font-size: 2rem;
+  }
+  .file-name {
+    width: 70%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    .icon.ion-document-text {
+      width: 12%;
+      padding-left: 12px;
+    }
+    small {
+      padding: 12px;
+      width: 100%;
+      min-width: 0px;
+    }
+  }
+  .file-icons {
+  	display: inline-flex;
+    width: 30%;
+    .icon.ion-ios-search {
+      padding-left: 12px;
+    }
+    a.text-right {
+      color: #444;
+      padding-left: 12px;
+    }
+  }
+}

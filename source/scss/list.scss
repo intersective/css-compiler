@@ -1,0 +1,46 @@
+/**
+ * Lists
+ * --------------------------------------------------
+ */
+
+.card .item,
+.list-inset .item,
+.padding > .list .item
+{
+  background-color: $secondary;
+  .item-content {
+    background-color: $secondary;
+  }
+}
+
+.card .item.background,
+.list-inset .item.background,
+.padding > .list .item.background {
+  background-color: $primary;
+  background-image: $cardImg;
+  background-size: cover;
+  background-blend-mode: soft-light;
+}
+
+
+// card padding customise (to customise the content to have same padding with card padding)
+.card-padding {
+  padding: 0 $card-padding;
+}
+
+// off card status tag a default height 
+.card-status {
+  min-height: 20px;
+}
+
+// no bottom border // to help the list which set bottom border to 0
+.no-bottom-border {
+  border-bottom: none;
+} 
+
+// uploader iframe custom css for fix ios display issue
+.uploader-iframe {
+  iframe {
+    height: 100vh;
+  }
+}

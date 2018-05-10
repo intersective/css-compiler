@@ -1,5 +1,7 @@
 # Dependency directories
 node_modules/
 
-source/*
+source/config.json
 www/*
+*/.DS_Store
+*/*/.DS_Store

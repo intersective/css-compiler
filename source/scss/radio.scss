@@ -1,0 +1,9 @@
+// single choice question tick color customise
+i.radio-icon.disable-pointer-events.icon.ion-checkmark {
+  color: $primary;
+}
+// mutliple choice question tick color customise 
+.checkbox input:checked:before, .checkbox input:checked + .checkbox-icon:before {
+  background: $primary;
+  border-color: $primary;
+}

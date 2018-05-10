@@ -1,0 +1,25 @@
+
+/**
+ * Bar (Headers and Footers)
+ * --------------------------------------------------
+ */
+
+.button, button {
+  &.back-button {
+    background-color: transparent;
+  }
+}
+
+// icon back button customise css
+.icon.ion-ios-arrow-back,
+.icon.ion-android-arrow-back {
+  color: $primary;
+}
+
+// customise ionic original header background color 
+.bar.bar-assertive {
+	border-color: $primary;
+	background-color: $primary;
+  background-image: linear-gradient(0deg, $primary, $primary 50%, transparent 50%);
+  text-align: center;
+}
