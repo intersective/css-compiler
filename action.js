@@ -254,10 +254,23 @@ const saveConfig = (body) => {
 	])
 }
 
+const test = (callback) => {
+	async.waterfall([
+		(callback) => {
+			fs.writeFile('/tmp/test.text', 'This is a test.', callback);
+		},
+
+		(callback) => {
+			fs.readFile('/tmp/test.text', callback)
+		}
+	], callback)
+}
+
 module.exports = {
   getCss: getCss,
   compile: compile,
-  updateAll: updateAll
+  updateAll: updateAll,
+  test: test
 }
 
 
