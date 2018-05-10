@@ -170,7 +170,7 @@ const compile = (body, callback) => {
  * 
  * @return {[type]} [description]
  */
-const updateAll = () => {
+const updateAll = (callback) => {
 	async.waterfall([
 		// update SASS files
 		// (callback) => {
@@ -190,7 +190,7 @@ const updateAll = () => {
 				}, callback)
 			})
 		}
-	])
+	], callback)
 }
 
 // Get Sass files from S3 bucket, store them in ./source/scss/

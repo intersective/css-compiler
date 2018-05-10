@@ -5,3 +5,4 @@ source/config.json
 www/*
 */.DS_Store
 */*/.DS_Store
+source/scss/custom-variables.scss
