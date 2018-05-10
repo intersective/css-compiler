@@ -9,7 +9,7 @@ const eachSeries = require('async/eachSeries');
 const fs = require('fs');
 const s3 = new AWS.S3();
 
-const configFile = './source/config.json'
+const configFile = __dirname + '/source/config.json'
 
 /**
  * Get the CSS according to program id & experience id & domain
@@ -115,25 +115,25 @@ const checkCss = (fileName, callback) => {
 const compile = (body, callback) => {
 	let fileName = body.domain.replace(/\./g, '_').toLowerCase() + '-' + 
 				body.model.toLowerCase() + '-' + body.model_id  + '.css';
-	let filePath = './www/css/' + fileName;
+	let filePath = __dirname + '/www/css/' + fileName;
 
 	async.waterfall([
 		// change customised variables
 		(callback) => {
 			let variables = "$primary: " + body.color + " !default;" + 
 				"$cardImg: url('../img/backgrounds/" + body.card + "') !default;"
-		  	fs.writeFile('./source/scss/custom-variables.scss', variables, callback)
+		  	fs.writeFile(__dirname + '/source/scss/custom-variables.scss', variables, callback)
 	    },
 
 		// compile
 		(callback) => {
-		  	gulp.src(['./source/scss/practera.scss'])
+		  	gulp.src([__dirname + '/source/scss/practera.scss'])
 		    	.pipe(sass())
 		    	.pipe(cleanCss({
 		      		keepSpecialComments: 0
 		    	}))
 		    	.pipe(rename(fileName))
-		    	.pipe(gulp.dest('./www/css/'))
+		    	.pipe(gulp.dest(__dirname + '/www/css/'))
 		    	.on('end', callback)
 
 			// save config to local file

@@ -4,7 +4,7 @@ const util = require('util');
 const app = express();
 const bodyParser = require('body-parser');
 const async = require('async');
-const action = require('./action');
+const action = require(__dirname + '/action');
 
 const port = process.env.PORT || 8888;
 app.use(bodyParser.json());
