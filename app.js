@@ -1,7 +1,7 @@
 const express = require('express');
+const app = express();
 const http = require('http');
 const util = require('util');
-const app = express();
 const bodyParser = require('body-parser');
 const async = require('async');
 const action = require(__dirname + '/action');
@@ -21,53 +21,40 @@ app.get('/', function(req, res) {
 });
 
 app.post('/', function(req, res) {
-	action.test((err, data) => {
-		if (err) {
-			return res.status(401).json({
-			    'success': false,
-			    'err': err
+	if (req.body && 
+		req.body.model && 
+		req.body.model_id && 
+		req.body.domain && 
+		req.body.color && 
+		req.body.card) {
+		// update one css
+		action.update(req.body, (err, data) => {
+			if (err) {
+				return res.status(401).json({
+				    'success': false,
+				    'err': err
+				})
+			}
+			return res.status(200).json({
+			    'success': true,
+			    'data': data
 			})
-		}
-		return res.status(200).json({
-		    'success': true,
-		    'data': data
 		})
-	})
-
-	// if (req.body && 
-	// 	req.body.model && 
-	// 	req.body.model_id && 
-	// 	req.body.domain && 
-	// 	req.body.color && 
-	// 	req.body.card) {
-	// 	// update one css
-	// 	action.compile(req.body, (err, data) => {
-	// 		if (err) {
-	// 			return res.status(401).json({
-	// 			    'success': false,
-	// 			    'err': err
-	// 			})
-	// 		}
-	// 		return res.status(200).json({
-	// 		    'success': true,
-	// 		    'data': data
-	// 		})
-	// 	})
-	// } else {
-	// 	// update all css based on configurations stored
-	// 	action.updateAll((err, data) => {
-	// 		if (err) {
-	// 			return res.status(401).json({
-	// 			    'success': false,
-	// 			    'err': err
-	// 			})
-	// 		}
-	// 		return res.status(200).json({
-	// 		    'success': true,
-	// 		    'data': data
-	// 		})
-	// 	})
-	// }
+	} else {
+		// update all css based on configurations stored
+		action.updateAll((err, data) => {
+			if (err) {
+				return res.status(401).json({
+				    'success': false,
+				    'err': err
+				})
+			}
+			return res.status(200).json({
+			    'success': true,
+			    'data': data
+			})
+		})
+	}
 	
 });
 

@@ -1,3 +1,5 @@
+const express = require('express');
+const app = express();
 const gulp = require('gulp');
 const sass = require('gulp-sass');
 const rename = require('gulp-rename');
@@ -7,9 +9,18 @@ AWS.config.update({region: 'ap-southeast-2'});
 const async = require('async');
 const eachSeries = require('async/eachSeries');
 const fs = require('fs');
+const shell = require('shelljs');
 const s3 = new AWS.S3();
 
-const configFile = __dirname + '/source/config.json'
+// root dir path
+let tmpDir = '/tmp'
+// env
+const ENV = app.get('env')
+if (ENV === 'local') {
+	tmpDir = __dirname + '/tmp'
+}
+const configFile = tmpDir + '/source/scss/config.json'
+const scssDir = tmpDir + '/source/scss'
 
 /**
  * Get the CSS according to program id & experience id & domain
@@ -102,7 +113,19 @@ const checkCss = (fileName, callback) => {
 	});
 }
 
+const update = (body, callback) => {
+	async.waterfall([
+		// update SASS files
+		(callback) => {
+			getSass(callback)
+		},
 
+		// compile SASS files
+		(callback) => {
+			compile(body, callback)
+		}
+	], callback)
+}
 
 /**
  * 1. Compile SASS to CSS
@@ -115,25 +138,25 @@ const checkCss = (fileName, callback) => {
 const compile = (body, callback) => {
 	let fileName = body.domain.replace(/\./g, '_').toLowerCase() + '-' + 
 				body.model.toLowerCase() + '-' + body.model_id  + '.css';
-	let filePath = __dirname + '/www/css/' + fileName;
+	let filePath = tmpDir + '/www/css/' + fileName;
 
 	async.waterfall([
 		// change customised variables
 		(callback) => {
-			let variables = "$primary: " + body.color + " !default;" + 
-				"$cardImg: url('../img/backgrounds/" + body.card + "') !default;"
-		  	fs.writeFile(__dirname + '/source/scss/custom-variables.scss', variables, callback)
+			let variables = "$primary: " + body.color + ";" + 
+				"$cardImage: url('../img/backgrounds/" + body.card + "');"
+		  	fs.writeFile(tmpDir + '/source/scss/custom-variables.scss', variables, callback)
 	    },
 
 		// compile
 		(callback) => {
-		  	gulp.src([__dirname + '/source/scss/practera.scss'])
+		  	gulp.src([tmpDir + '/source/scss/practera.scss'])
 		    	.pipe(sass())
 		    	.pipe(cleanCss({
 		      		keepSpecialComments: 0
 		    	}))
 		    	.pipe(rename(fileName))
-		    	.pipe(gulp.dest(__dirname + '/www/css/'))
+		    	.pipe(gulp.dest(tmpDir + '/www/css/'))
 		    	.on('end', callback)
 
 			// save config to local file
@@ -173,9 +196,9 @@ const compile = (body, callback) => {
 const updateAll = (callback) => {
 	async.waterfall([
 		// update SASS files
-		// (callback) => {
-		// 	getSass(callback)
-		// },
+		(callback) => {
+			getSass(callback)
+		},
 
 		// re-compile all CSS files based on config.json
 		(callback) => {
@@ -193,21 +216,50 @@ const updateAll = (callback) => {
 	], callback)
 }
 
-// Get Sass files from S3 bucket, store them in ./source/scss/
+/**
+ * Get Sass files from S3 bucket, store them in tmp/source/scss/
+ * 
+ * @param  {Function} callback [Callback function]
+ * @return 
+ */
 const getSass = (callback) => {
-	var params = {
-		Bucket: "sass.practera.com",
-		MaxKeys: 10
-	};
-	s3.listObjects(params, function(err, data) {
-	   	if (err) {
-	   		
-	   	}
-	   	var files = [];
-		data.Contents.forEach((element) => {
-		  files.push(element.Key);
-		});
-	});
+	async.waterfall([
+		// create SASS ionic directory if not exist
+		(callback) => {
+			if (!fs.existsSync(scssDir + '/ionic/ionicons')){
+			    shell.mkdir('-p', scssDir + '/ionic/ionicons')
+			} 
+			callback()
+		},
+
+		// get SASS files to local
+		(callback) => {
+			var params = {
+				Bucket: "sass.practera.com"
+			}
+			s3.listObjects(params, (err, data) => {
+			   	eachSeries(data.Contents, (obj, callback) => {
+			   		let key = obj.Key
+			   		let fileName = key.replace(/appv1/, '')
+			   		// don't download config.json for local
+					if (fileName == '/' || 
+						(ENV === 'local' && fileName == '/config.json')) {
+						callback()
+					} else {
+						let file = fs.createWriteStream(scssDir + fileName)
+						s3.getObject({
+						    Bucket: "sass.practera.com",
+						    Key: key
+						})
+						.createReadStream()
+						.pipe(file)
+						.on('finish', callback)
+					}
+				}, callback)
+			})
+		}
+
+	], callback)
 }
 
 /**
@@ -216,7 +268,7 @@ const getSass = (callback) => {
  * @param  {Object} body  [Body parameter including domain & model & model_id]
  * @return 
  */
-const saveConfig = (body) => {
+const saveConfig = (body, callback) => {
 	async.waterfall([
 		// create config.json if not exist
 		(callback) => {
@@ -249,26 +301,55 @@ const saveConfig = (body) => {
 				
 				fs.writeFile(configFile, JSON.stringify(config), callback);
 			})
-		}
-
-	])
-}
-
-const test = (callback) => {
-	async.waterfall([
-		(callback) => {
-			fs.writeFile('/tmp/test.text', 'This is a test.', callback);
 		},
 
+		// upload config.json back to S3 (if it's not local)
 		(callback) => {
-			fs.readFile('/tmp/test.text', callback)
+			if (ENV === 'local') {
+				callback()
+			} else {
+				fs.readFile(configFile, function (err, data) {
+				  if (err) { 
+				  	throw err; 
+				  }
+
+				  let base64data = new Buffer(data, 'binary');
+
+				  s3.putObject({
+				    Bucket: 'sass.practera.com',
+				    Key: 'appv1/config.json',
+				    Body: base64data
+				  }, callback);
+				});
+			}
 		}
+
 	], callback)
+}
+
+// this is for test, not in use now
+const test = (callback) => {
+	var params = {
+		Bucket: "sass.practera.com",
+		Delimiter: 'appv1/ionic'
+	};
+	let file = fs.createWriteStream('./tmp/test.scss')
+	s3.getObject({
+	    Bucket: "sass.practera.com",
+	    Key: 'appv1/list.scss'
+	})
+	.createReadStream()
+	.pipe(file)
+	// s3.listObjects(params, function(err, data) {
+	// 	data.Contents.forEach((element, callback) => {
+	// 	  console.log(element.Key)
+	// 	});
+	// });
 }
 
 module.exports = {
   getCss: getCss,
-  compile: compile,
+  update: update,
   updateAll: updateAll,
   test: test
 }
