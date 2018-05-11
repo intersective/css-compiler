@@ -58,6 +58,21 @@ app.post('/', function(req, res) {
 	
 });
 
+app.get('/test', function(req, res) {
+	action.test((err, data) => {
+		if (err) {
+			return res.status(401).json({
+			    'success': false,
+			    'err': err
+			})
+		}
+		return res.status(200).json({
+		    'success': true,
+		    'data': data
+		})
+	})
+})
+
 if (app.get('env') === 'local') {
   	const server = http.createServer(app).listen(port, () => {
     	console.log('Server listening on port', port);

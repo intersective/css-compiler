@@ -254,7 +254,6 @@ const getSass = (callback) => {
 				Bucket: "sass.practera.com"
 			}
 			s3.listObjects(params, (err, data) => {
-				console.log('list of objects:', data)
 			   	eachSeries(data.Contents, (obj, callback) => {
 			   		console.log('getting "' + obj.Key + '"...')
 			   		let key = obj.Key
@@ -352,24 +351,23 @@ const saveConfig = (body, callback) => {
 	], callback)
 }
 
-// this is for test, not in use now
+// this is for test only
 const test = (callback) => {
-	var params = {
-		Bucket: "sass.practera.com",
-		Delimiter: 'appv1/ionic'
-	};
-	let file = fs.createWriteStream('./tmp/test.scss')
+	// var params = {
+	// 	Bucket: "sass.practera.com",
+	// 	Delimiter: 'appv1/ionic'
+	// };
+	// let file = fs.createWriteStream('./tmp/test.scss')
+	// s3.getObject({
+	//     Bucket: "sass.practera.com",
+	//     Key: 'appv1/list.scss'
+	// })
+	// .createReadStream()
+	// .pipe(file)
 	s3.getObject({
 	    Bucket: "sass.practera.com",
 	    Key: 'appv1/list.scss'
-	})
-	.createReadStream()
-	.pipe(file)
-	// s3.listObjects(params, function(err, data) {
-	// 	data.Contents.forEach((element, callback) => {
-	// 	  console.log(element.Key)
-	// 	});
-	// });
+	}, callback);
 }
 
 module.exports = {
