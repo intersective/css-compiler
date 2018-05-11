@@ -255,7 +255,6 @@ const getSass = (callback) => {
 			}
 			s3.listObjects(params, (err, data) => {
 			   	eachSeries(data.Contents, (obj, callback) => {
-			   		console.log('getting "' + obj.Key + '"...')
 			   		let key = obj.Key
 			   		let fileName = key.replace(/appv1/, '')
 			   		// don't download config.json for local
@@ -264,7 +263,6 @@ const getSass = (callback) => {
 						callback()
 					} else {
 						let file = fs.createWriteStream(scssDir + fileName)
-						console.log('file stream created for "' + scssDir + fileName + '"')
 						s3.getObject({
 						    Bucket: "sass.practera.com",
 						    Key: key
