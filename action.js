@@ -241,8 +241,10 @@ const getSass = (callback) => {
 		(callback) => {
 			console.log('creating SCSS directory...')
 			if (!fs.existsSync(scssDir + '/ionic/ionicons')){
-			    shell.mkdir('-p', scssDir + '/ionic/ionicons')
-			    console.log('"' + scssDir + '/ionic/ionicons" created...')
+			    shell.mkdir('-p', scssDir )
+			    if (ENV != 'local') {
+				    shell.cp('-R', __dirname + '/tmp/source/scss/ionic/', scssDir + '/ionic/')
+				}
 			} 
 			callback()
 		},
@@ -251,7 +253,8 @@ const getSass = (callback) => {
 		(callback) => {
 			console.log('getting SCSS files...')
 			var params = {
-				Bucket: "sass.practera.com"
+				Bucket: "sass.practera.com",
+				Delimiter: 'appv1/ionic'
 			}
 			s3.listObjects(params, (err, data) => {
 			   	eachSeries(data.Contents, (obj, callback) => {

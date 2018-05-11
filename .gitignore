@@ -1,7 +1,9 @@
 # Dependency directories
 node_modules/
 
-tmp/*
+tmp/www/*
+tmp/source/scss/*.scss
+tmp/source/scss/*.json
 
 .DS_Store
 */.DS_Store
