@@ -264,12 +264,16 @@ const getSass = (callback) => {
 						callback()
 					} else {
 						let file = fs.createWriteStream(scssDir + fileName)
+						console.log('file stream created for "' + scssDir + fileName + '"')
 						s3.getObject({
 						    Bucket: "sass.practera.com",
 						    Key: key
 						})
 						.createReadStream()
 						.pipe(file)
+						.on('error', (e) => {
+							console.error(e)
+						})
 						.on('finish', callback)
 					}
 				}, callback)
