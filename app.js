@@ -10,6 +10,20 @@ const port = process.env.PORT || 8888;
 app.use(bodyParser.json());
 
 app.get('/', function(req, res) {
+	if (req.query.test) {
+		return action.test((err, data) => {
+			if (err) {
+				res.status(401).json({
+				    'success': false,
+				    'err': err
+				})
+			}
+			res.status(200).json({
+			    'success': true,
+			    'data': data
+			})
+		})
+	} 
 	// check query data
 	if (!req.query.domain || !req.query.experience_id || !req.query.program_id) {
 		return res.status(401).json({
@@ -58,20 +72,6 @@ app.post('/', function(req, res) {
 	
 });
 
-app.get('/test', function(req, res) {
-	action.test((err, data) => {
-		if (err) {
-			return res.status(401).json({
-			    'success': false,
-			    'err': err
-			})
-		}
-		return res.status(200).json({
-		    'success': true,
-		    'data': data
-		})
-	})
-})
 
 if (app.get('env') === 'local') {
   	const server = http.createServer(app).listen(port, () => {
