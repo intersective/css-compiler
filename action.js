@@ -242,6 +242,7 @@ const getSass = (callback) => {
 			console.log('creating SCSS directory...')
 			if (!fs.existsSync(scssDir + '/ionic/ionicons')){
 			    shell.mkdir('-p', scssDir + '/ionic/ionicons')
+			    console.log('"' + scssDir + '/ionic/ionicons" created...')
 			} 
 			callback()
 		},
