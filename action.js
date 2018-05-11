@@ -113,15 +113,24 @@ const checkCss = (fileName, callback) => {
 	});
 }
 
+/** 
+ * Update one CSS file
+ * 
+ * @param  {Object}   body     [Body parameter]
+ * @param  {Function} callback [Callback function]
+ * @return 
+ */
 const update = (body, callback) => {
 	async.waterfall([
 		// update SASS files
 		(callback) => {
+			console.log('getSass started...')
 			getSass(callback)
 		},
 
 		// compile SASS files
 		(callback) => {
+			console.log('compile started...')
 			compile(body, callback)
 		}
 	], callback)
@@ -226,6 +235,7 @@ const getSass = (callback) => {
 	async.waterfall([
 		// create SASS ionic directory if not exist
 		(callback) => {
+			console.log('create directory started...')
 			if (!fs.existsSync(scssDir + '/ionic/ionicons')){
 			    shell.mkdir('-p', scssDir + '/ionic/ionicons')
 			} 
@@ -234,6 +244,7 @@ const getSass = (callback) => {
 
 		// get SASS files to local
 		(callback) => {
+			console.log('get SCSS files started...')
 			var params = {
 				Bucket: "sass.practera.com"
 			}
