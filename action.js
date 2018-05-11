@@ -124,13 +124,13 @@ const update = (body, callback) => {
 	async.waterfall([
 		// update SASS files
 		(callback) => {
-			console.log('getSass started...')
+			console.log('getSass() started...')
 			getSass(callback)
 		},
 
 		// compile SASS files
 		(callback) => {
-			console.log('compile started...')
+			console.log('compile() started...')
 			compile(body, callback)
 		}
 	], callback)
@@ -152,6 +152,8 @@ const compile = (body, callback) => {
 	async.waterfall([
 		// change customised variables
 		(callback) => {
+			console.log('--------' + fileName + '--------')
+			console.log('changing customised variables...')
 			let variables = "$primary: " + body.color + ";" + 
 				"$cardImage: url('../img/backgrounds/" + body.card + "');"
 		  	fs.writeFile(tmpDir + '/source/scss/custom-variables.scss', variables, callback)
@@ -159,6 +161,7 @@ const compile = (body, callback) => {
 
 		// compile
 		(callback) => {
+			console.log('compiling...')
 		  	gulp.src([tmpDir + '/source/scss/practera.scss'])
 		    	.pipe(sass())
 		    	.pipe(cleanCss({
@@ -174,6 +177,7 @@ const compile = (body, callback) => {
 
 		// upload css file to S3
 		(callback) => {
+			console.log('uploading css file...')
 			fs.readFile(filePath, function (err, data) {
 			  if (err) { 
 			  	throw err; 
@@ -235,7 +239,7 @@ const getSass = (callback) => {
 	async.waterfall([
 		// create SASS ionic directory if not exist
 		(callback) => {
-			console.log('create directory started...')
+			console.log('creating SCSS directory...')
 			if (!fs.existsSync(scssDir + '/ionic/ionicons')){
 			    shell.mkdir('-p', scssDir + '/ionic/ionicons')
 			} 
@@ -244,12 +248,14 @@ const getSass = (callback) => {
 
 		// get SASS files to local
 		(callback) => {
-			console.log('get SCSS files started...')
+			console.log('getting SCSS files...')
 			var params = {
 				Bucket: "sass.practera.com"
 			}
 			s3.listObjects(params, (err, data) => {
+				console.log('list of objects:', data)
 			   	eachSeries(data.Contents, (obj, callback) => {
+			   		console.log('getting "' + obj.Key + '"...')
 			   		let key = obj.Key
 			   		let fileName = key.replace(/appv1/, '')
 			   		// don't download config.json for local
@@ -283,6 +289,7 @@ const saveConfig = (body, callback) => {
 	async.waterfall([
 		// create config.json if not exist
 		(callback) => {
+			console.log('creating config.json file...')
 			fs.access(configFile, (err) => {
 			  if (err) {
 			    fs.writeFile(configFile, '{}', callback)
@@ -294,6 +301,7 @@ const saveConfig = (body, callback) => {
 
 		// update config.json file
 		(callback) => {
+			console.log('updating config.json file...')
 			fs.readFile(configFile, (err, data) => {
 				let config = JSON.parse(data)
 				if (!config.hasOwnProperty(body.domain)) {
@@ -319,6 +327,7 @@ const saveConfig = (body, callback) => {
 			if (ENV === 'local') {
 				callback()
 			} else {
+				console.log('uploading config.json file...')
 				fs.readFile(configFile, function (err, data) {
 				  if (err) { 
 				  	throw err; 
