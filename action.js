@@ -106,8 +106,8 @@ const checkCss = (fileName, callback) => {
 	  if (err && err.code === 'NotFound') {  
 	    return callback(false)
 	  } else {  
-	  	// signed url will be expire after 10 minutes
-	  	params.Expires = 600
+	  	// signed url will be expire after 1 week
+	  	params.Expires = 3600 * 24 * 7
 	    return callback(s3.getSignedUrl('getObject', params));
 	  }
 	});
@@ -177,21 +177,26 @@ const compile = (body, callback) => {
 
 		// upload css file to S3
 		(callback) => {
-			console.log('uploading css file...')
-			fs.readFile(filePath, function (err, data) {
-			  if (err) { 
-			  	throw err; 
-			  }
+			if (ENV == 'local') {
+				callback()
+			} else {
+				console.log('uploading css file...')
+				fs.readFile(filePath, function (err, data) {
+				  if (err) { 
+				  	throw err; 
+				  }
 
-			  let base64data = new Buffer(data, 'binary');
+				  let base64data = new Buffer(data, 'binary');
 
-			  s3.putObject({
-			    Bucket: 'css.practera.com',
-			    Key: 'appv1/css/' + fileName,
-			    Body: base64data
-			  }, callback);
+				  s3.putObject({
+				    Bucket: 'css.practera.com',
+				    Key: 'appv1/css/' + fileName,
+				    Body: base64data,
+				    ContentType: 'text/css'
+				  }, callback);
 
-			});
+				});
+			}
 		}
 
 	], callback)
@@ -366,8 +371,8 @@ const test = (callback) => {
 	// .createReadStream()
 	// .pipe(file)
 	s3.getObject({
-	    Bucket: "sass.practera.com",
-	    Key: 'appv1/list.scss'
+	    Bucket: "css.practera.com",
+	    Key: 'appv1/css/appdev_practera_com-program-238.css'
 	}, callback);
 }
 
