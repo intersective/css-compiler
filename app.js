@@ -10,6 +10,12 @@ const port = process.env.PORT || 8888;
 app.use(bodyParser.json());
 
 app.get('/', function(req, res) {
+	// set header for CORS
+	res.set({
+		'Access-Control-Allow-Origin': '*',
+		'Access-Control-Allow-Methods': 'POST,GET,OPTIONS',
+        'Access-Control-Allow-Headers':'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,appkey'
+    })
 	if (req.query.test) {
 		return action.test((err, data) => {
 			if (err) {
@@ -35,6 +41,12 @@ app.get('/', function(req, res) {
 });
 
 app.post('/', function(req, res) {
+	// set header for CORS
+	res.set({
+		'Access-Control-Allow-Origin': '*',
+		'Access-Control-Allow-Methods': 'POST,GET,OPTIONS',
+        'Access-Control-Allow-Headers':'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,appkey'
+    })
 	if (req.body && 
 		req.body.model && 
 		req.body.model_id && 
