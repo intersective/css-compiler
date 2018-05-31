@@ -54,7 +54,25 @@ app.post('/', function(req, res) {
 		req.body.color && 
 		req.body.card) {
 		// update one css
-		action.update(req.body, (err, data) => {
+		// action.update(req.body, (err, data) => {
+		// 	if (err) {
+		// 		return res.status(401).json({
+		// 		    'success': false,
+		// 		    'err': err
+		// 		})
+		// 	}
+		// 	return res.status(200).json({
+		// 	    'success': true,
+		// 	    'data': data
+		// 	})
+		// })
+		action.update(req.body, () => {})
+		return res.status(200).json({
+		    'success': true
+		})
+	} else if (req.body.domain) {
+		// update all css based on configurations stored
+		action.updateAll(req.body, (err, data) => {
 			if (err) {
 				return res.status(401).json({
 				    'success': false,
@@ -67,18 +85,9 @@ app.post('/', function(req, res) {
 			})
 		})
 	} else {
-		// update all css based on configurations stored
-		action.updateAll((err, data) => {
-			if (err) {
-				return res.status(401).json({
-				    'success': false,
-				    'err': err
-				})
-			}
-			return res.status(200).json({
-			    'success': true,
-			    'data': data
-			})
+		return res.status(401).json({
+		    'success': false,
+		    'err': 'invalid post data'
 		})
 	}
 	
