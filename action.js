@@ -261,6 +261,7 @@ const getSass = (body, callback) => {
 				Bucket: "sass.practera.com",
 				Delimiter: (body.domain == 'appdev.practera.com') ? 'appv1/develop/ionic' : 'appv1/live/ionic'
 			}
+			console.log('params', params)
 			s3.listObjects(params, (err, data) => {
 				console.log(data.Contents)
 			   	eachSeries(data.Contents, (obj, callback) => {
