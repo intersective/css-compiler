@@ -126,7 +126,7 @@ const update = (body, callback) => {
 		// update SASS files
 		(callback) => {
 			console.log('getSass() started...')
-			getSass(callback)
+			getSass(body, callback)
 		},
 
 		// compile SASS files
@@ -212,11 +212,11 @@ const compile = (body, callback) => {
  * 
  * @return {[type]} [description]
  */
-const updateAll = (callback) => {
+const updateAll = (body, callback) => {
 	async.waterfall([
 		// update SASS files
 		(callback) => {
-			getSass(callback)
+			getSass(body, callback)
 		},
 
 		// re-compile all CSS files based on config.json
@@ -241,7 +241,7 @@ const updateAll = (callback) => {
  * @param  {Function} callback [Callback function]
  * @return 
  */
-const getSass = (callback) => {
+const getSass = (body, callback) => {
 	async.waterfall([
 		// create SASS ionic directory if not exist
 		(callback) => {
@@ -260,21 +260,32 @@ const getSass = (callback) => {
 			console.log('getting SCSS files...')
 			var params = {
 				Bucket: "sass.practera.com",
-				Delimiter: 'appv1/ionic'
+				Delimiter: (body.domain == 'appdev.practera.com') ? 'appv1/develop/ionic' : 'appv1/live/ionic'
 			}
+			console.log('params', params)
 			s3.listObjects(params, (err, data) => {
+				console.log(data.Contents)
 			   	eachSeries(data.Contents, (obj, callback) => {
-			   		let key = obj.Key
-			   		let fileName = key.replace(/appv1/, '')
+			   		let fileName = obj.Key
+			   		let reqEnv = ''
+			   		if (body.domain == 'appdev.practera.com') {
+			   			reqEnv = 'develop'
+			   		} else {
+			   			reqEnv = 'live'
+			   		}
+			   		let regx = new RegExp("^appv1\/" + reqEnv + "\/");
 			   		// don't download config.json for local
-					if (fileName == '/' || 
-						(ENV === 'local' && fileName == '/config.json')) {
+					if (!fileName.match(regx) ||
+						fileName == 'appv1/' + reqEnv + '/' ||
+						(ENV === 'local' && fileName == 'appv1/' + reqEnv + '/config.json')) {
 						callback()
 					} else {
+						fileName = fileName.replace(regx, '/')
+						console.log('getting "' + fileName + '" ...')
 						let file = fs.createWriteStream(scssDir + fileName)
 						s3.getObject({
 						    Bucket: "sass.practera.com",
-						    Key: key
+						    Key: obj.Key
 						})
 						.createReadStream()
 						.pipe(file)
@@ -346,9 +357,15 @@ const saveConfig = (body, callback) => {
 
 				  let base64data = new Buffer(data, 'binary');
 
+				  if (body.domain == 'appdev.practera.com') {
+				  	reqEnv = 'develop'
+				  } else {
+				  	reqEnv = 'live'
+				  }
+
 				  s3.putObject({
 				    Bucket: 'sass.practera.com',
-				    Key: 'appv1/config.json',
+				    Key: 'appv1/' + reqEnv + '/config.json',
 				    Body: base64data
 				  }, callback);
 				});
