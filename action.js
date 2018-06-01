@@ -265,7 +265,6 @@ const getSass = (body, callback) => {
 				if (err) {
 					return console.err(err)
 				}
-				console.log(data.Contents)
 			   	eachSeries(data.Contents, (obj, callback) => {
 			   		let fileName = obj.Key
 			   		let reqEnv = ''
