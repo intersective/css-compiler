@@ -261,11 +261,14 @@ const getSass = (body, callback) => {
 				Bucket: "sass.practera.com",
 				Delimiter: (body.domain == 'appdev.practera.com') ? 'appv1/develop/ionic' : 'appv1/live/ionic'
 			}
+			console.log(params)
 			s3.listObjects(params, (err, data) => {
+				console.log('no. of keys:', data.Contents.length)
 				if (err) {
 					return console.err(err)
 				}
 			   	eachSeries(data.Contents, (obj, callback) => {
+			   		console.log(obj.Key)
 			   		let fileName = obj.Key
 			   		let reqEnv = ''
 			   		if (body.domain == 'appdev.practera.com') {
