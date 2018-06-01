@@ -278,6 +278,7 @@ const getSass = (body, callback) => {
 						callback()
 					} else {
 						fileName = fileName.replace(regx, '/')
+						console.log('getting "' + fileName + '" ...')
 						let file = fs.createWriteStream(scssDir + fileName)
 						s3.getObject({
 						    Bucket: "sass.practera.com",
