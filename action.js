@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const gulp = require('gulp');
 const sass = require('gulp-sass');
+const https = require("https");
 const rename = require('gulp-rename');
 const cleanCss = require('gulp-clean-css');
 const AWS = require('aws-sdk');
@@ -357,6 +358,79 @@ const saveConfig = (body, callback) => {
 	], callback)
 }
 
+const checkDeployedSass = (callback) => {
+
+	const directoryPath = '/repos/jazzmind/practera-app/contents/scss';
+
+	console.log('We are here');
+    getDirectoryFromGithub(directoryPath, function (directory) {
+        directory.forEach(function (file) {
+			const fileName = file.name;
+			const filePath = directoryPath + '/' + fileName;
+
+			getFileFromGithub(filePath, function (file) {
+                console.log(file.name);
+                console.log(file);
+			});
+
+        });
+    });
+};
+
+function getDirectoryFromGithub(path, callback) {
+    let options = {
+        host: 'api.github.com',
+        path: path,
+        headers: {
+            'Authorization': 'token a68b48e4646e650c881e2e082bf150bfc78e14c0',
+            'Accept': 'application/vnd.github.v3.raw',
+            'User-Agent': 'http://developer.github.com/v3/#user-agent-required)'
+        }
+
+    };
+
+    https.get(options, function (result) {
+        // Continuously update stream with data
+        console.log('got here');
+        let body = '';
+        result.on('data', function(d) {
+            body += d;
+        });
+        result.on('end', function() {
+        	callback(JSON.parse(body));
+        });
+    }).on('error', function (err) {
+        console.log('Error, with: ' + err.message);
+    });
+}
+
+function getFileFromGithub(path, callback) {
+    let options = {
+        host: 'api.github.com',
+        path: path,
+        headers: {
+            'Authorization': 'token a68b48e4646e650c881e2e082bf150bfc78e14c0',
+            'Accept': 'application/vnd.github.v3.raw',
+            'User-Agent': 'http://developer.github.com/v3/#user-agent-required)'
+        }
+
+    };
+
+    https.get(options, function (result) {
+        // Continuously update stream with data
+        console.log('got here');
+        let body = '';
+        result.on('data', function(d) {
+            body += d;
+        });
+        result.on('end', function() {
+            callback(body);
+        });
+    }).on('error', function (err) {
+        console.log('Error, with: ' + err.message);
+    });
+}
+
 // this is for test only
 const test = (callback) => {
 	// var params = {
@@ -374,13 +448,14 @@ const test = (callback) => {
 	    Bucket: "css.practera.com",
 	    Key: 'appv1/css/appdev_practera_com-program-238.css'
 	}, callback);
-}
+};
 
 module.exports = {
-  getCss: getCss,
-  update: update,
-  updateAll: updateAll,
-  test: test
+    getCss: getCss,
+    update: update,
+    updateAll: updateAll,
+    test: test,
+    checkDeployedSass: checkDeployedSass
 }
 
 

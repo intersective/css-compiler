@@ -11,6 +11,8 @@ app.use(bodyParser.json());
 
 app.get('/', function(req, res) {
 	// set header for CORS
+	console.log('it works!');
+	console.log(req.query);
 	res.set({
 		'Access-Control-Allow-Origin': '*',
 		'Access-Control-Allow-Methods': 'POST,GET,OPTIONS',
@@ -29,15 +31,22 @@ app.get('/', function(req, res) {
 			    'data': data
 			})
 		})
-	} 
+	}
+
+	if (req.query.deployCheck) {
+		console.log('is it here?');
+        return action.checkDeployedSass();
+    }
+
 	// check query data
 	if (!req.query.domain || !req.query.experience_id || !req.query.program_id) {
 		return res.status(401).json({
 		    'status': 'error',
 		    'msg': 'missing parameters'
 		});
-	}
-	action.getCss(req.query, res)
+	} else {
+        action.getCss(req.query, res)
+    }
 });
 
 app.post('/', function(req, res) {
