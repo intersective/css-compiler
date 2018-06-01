@@ -267,38 +267,36 @@ const getSass = (body, callback) => {
 				if (err) {
 					return console.err(err)
 				}
-				exit
-			 //   	eachSeries(data.Contents, (obj, callback) => {
-			 //   		console.log(obj.Key)
-			 //   		let fileName = obj.Key
-			 //   		let reqEnv = ''
-			 //   		if (body.domain == 'appdev.practera.com') {
-			 //   			reqEnv = 'develop'
-			 //   		} else {
-			 //   			reqEnv = 'live'
-			 //   		}
-			 //   		let regx = new RegExp("^appv1\/" + reqEnv + "\/");
-			 //   		// don't download config.json for local
-				// 	if (!fileName.match(regx) ||
-				// 		fileName == 'appv1/' + reqEnv + '/' ||
-				// 		(ENV === 'local' && fileName == 'appv1/' + reqEnv + '/config.json')) {
-				// 		callback()
-				// 	} else {
-				// 		fileName = fileName.replace(regx, '/')
-				// 		console.log('getting "' + fileName + '" ...')
-				// 		let file = fs.createWriteStream(scssDir + fileName)
-				// 		s3.getObject({
-				// 		    Bucket: "sass.practera.com",
-				// 		    Key: obj.Key
-				// 		})
-				// 		.createReadStream()
-				// 		.pipe(file)
-				// 		.on('error', (e) => {
-				// 			console.error(e)
-				// 		})
-				// 		.on('finish', callback)
-				// 	}
-				// }, callback)
+			   	eachSeries(data.Contents, (obj, callback) => {
+			   		let fileName = obj.Key
+			   		let reqEnv = ''
+			   		if (body.domain == 'appdev.practera.com') {
+			   			reqEnv = 'develop'
+			   		} else {
+			   			reqEnv = 'live'
+			   		}
+			   		let regx = new RegExp("^appv1\/" + reqEnv + "\/");
+			   		// don't download config.json for local
+					if (!fileName.match(regx) ||
+						fileName == 'appv1/' + reqEnv + '/' ||
+						(ENV === 'local' && fileName == 'appv1/' + reqEnv + '/config.json')) {
+						callback()
+					} else {
+						fileName = fileName.replace(regx, '/')
+						console.log('getting "' + fileName + '" ...')
+						let file = fs.createWriteStream(scssDir + fileName)
+						s3.getObject({
+						    Bucket: "sass.practera.com",
+						    Key: obj.Key
+						})
+						.createReadStream()
+						.pipe(file)
+						.on('error', (e) => {
+							console.error(e)
+						})
+						.on('finish', callback)
+					}
+				}, callback)
 			})
 		}
 
