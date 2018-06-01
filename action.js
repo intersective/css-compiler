@@ -257,7 +257,7 @@ const getSass = (body, callback) => {
 		// get SASS files to local
 		(callback) => {
 			console.log('getting SCSS files...')
-			var params = {
+			let params = {
 				Bucket: "sass.practera.com",
 				Delimiter: (body.domain == 'appdev.practera.com') ? 'appv1/develop/ionic' : 'appv1/live/ionic'
 			}
@@ -267,37 +267,38 @@ const getSass = (body, callback) => {
 				if (err) {
 					return console.err(err)
 				}
-			   	eachSeries(data.Contents, (obj, callback) => {
-			   		console.log(obj.Key)
-			   		let fileName = obj.Key
-			   		let reqEnv = ''
-			   		if (body.domain == 'appdev.practera.com') {
-			   			reqEnv = 'develop'
-			   		} else {
-			   			reqEnv = 'live'
-			   		}
-			   		let regx = new RegExp("^appv1\/" + reqEnv + "\/");
-			   		// don't download config.json for local
-					if (!fileName.match(regx) ||
-						fileName == 'appv1/' + reqEnv + '/' ||
-						(ENV === 'local' && fileName == 'appv1/' + reqEnv + '/config.json')) {
-						callback()
-					} else {
-						fileName = fileName.replace(regx, '/')
-						console.log('getting "' + fileName + '" ...')
-						let file = fs.createWriteStream(scssDir + fileName)
-						s3.getObject({
-						    Bucket: "sass.practera.com",
-						    Key: obj.Key
-						})
-						.createReadStream()
-						.pipe(file)
-						.on('error', (e) => {
-							console.error(e)
-						})
-						.on('finish', callback)
-					}
-				}, callback)
+				exit
+			 //   	eachSeries(data.Contents, (obj, callback) => {
+			 //   		console.log(obj.Key)
+			 //   		let fileName = obj.Key
+			 //   		let reqEnv = ''
+			 //   		if (body.domain == 'appdev.practera.com') {
+			 //   			reqEnv = 'develop'
+			 //   		} else {
+			 //   			reqEnv = 'live'
+			 //   		}
+			 //   		let regx = new RegExp("^appv1\/" + reqEnv + "\/");
+			 //   		// don't download config.json for local
+				// 	if (!fileName.match(regx) ||
+				// 		fileName == 'appv1/' + reqEnv + '/' ||
+				// 		(ENV === 'local' && fileName == 'appv1/' + reqEnv + '/config.json')) {
+				// 		callback()
+				// 	} else {
+				// 		fileName = fileName.replace(regx, '/')
+				// 		console.log('getting "' + fileName + '" ...')
+				// 		let file = fs.createWriteStream(scssDir + fileName)
+				// 		s3.getObject({
+				// 		    Bucket: "sass.practera.com",
+				// 		    Key: obj.Key
+				// 		})
+				// 		.createReadStream()
+				// 		.pipe(file)
+				// 		.on('error', (e) => {
+				// 			console.error(e)
+				// 		})
+				// 		.on('finish', callback)
+				// 	}
+				// }, callback)
 			})
 		}
 
@@ -380,10 +381,14 @@ const saveConfig = (body, callback) => {
 
 // this is for test only
 const test = (callback) => {
-	s3.listObjects({
+	let params = {
 	    Bucket: "sass.practera.com",
 	    Delimiter: 'appv1/develop/ionic'
-	}, callback);
+	}
+	s3.listObjects(params, (err, data) => {
+		console.log('no. of keys:', data.Contents.length)
+		callback(err, data)
+	});
 }
 
 module.exports = {
