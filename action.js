@@ -378,20 +378,9 @@ const saveConfig = (body, callback) => {
 
 // this is for test only
 const test = (callback) => {
-	// var params = {
-	// 	Bucket: "sass.practera.com",
-	// 	Delimiter: 'appv1/ionic'
-	// };
-	// let file = fs.createWriteStream('./tmp/test.scss')
-	// s3.getObject({
-	//     Bucket: "sass.practera.com",
-	//     Key: 'appv1/list.scss'
-	// })
-	// .createReadStream()
-	// .pipe(file)
-	s3.getObject({
-	    Bucket: "css.practera.com",
-	    Key: 'appv1/css/appdev_practera_com-program-238.css'
+	s3.listObjects({
+	    Bucket: "sass.practera.com",
+	    Delimiter: 'appv1/develop/ionic'
 	}, callback);
 }
 
