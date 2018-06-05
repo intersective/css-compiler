@@ -393,7 +393,7 @@ const test = (callback) => {
 	// 	console.log('no. of keys:', data.Contents.length)
 	// 	callback(err, data)
 	// });
-	callback(err, {
+	callback(null, {
 		"GitHub_Token": process.env.GITHUB_TOKEN
 	})
 }
