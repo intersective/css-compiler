@@ -65,7 +65,13 @@ const getCss = (query, res) => {
 
 		(callback) => {
 			// use default css, go to next step if not found
-			fileName = 'practera.css';
+			if (query.domain == 'app.practera.com') {
+				// app.practera.com still use the old styling
+				fileName = 'practera.css';
+			} else {
+				// app-dev.practera.com & practera.app use the new styling
+				fileName = 'practera-v1.4.css';
+			}
 			checkCss(fileName, (url) => {
 				if (url) {
 					return res.status(200).json({
