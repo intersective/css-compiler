@@ -385,14 +385,17 @@ const saveConfig = (body, callback) => {
 
 // this is for test only
 const test = (callback) => {
-	let params = {
-	    Bucket: "sass.practera.com",
-	    Delimiter: 'appv1/develop/ionic'
-	}
-	s3.listObjects(params, (err, data) => {
-		console.log('no. of keys:', data.Contents.length)
-		callback(err, data)
-	});
+	// let params = {
+	//     Bucket: "sass.practera.com",
+	//     Delimiter: 'appv1/develop/ionic'
+	// }
+	// s3.listObjects(params, (err, data) => {
+	// 	console.log('no. of keys:', data.Contents.length)
+	// 	callback(err, data)
+	// });
+	callback(err, {
+		"GitHub_Token": process.env.GITHUB_TOKEN
+	})
 }
 
 module.exports = {
