@@ -12,7 +12,7 @@ const eachSeries = require('async/eachSeries');
 const fs = require('fs');
 const shell = require('shelljs');
 const s3 = new AWS.S3();
-let gitToken = process.env.NODE_GITHUB_TOKEN || '294d4b5501249d3beb3c71481ac4640b9e5da2c6';
+let gitToken = process.env.NODE_GITHUB_TOKEN || '';
 // root dir path
 let tmpDir = '/tmp';
 // env
