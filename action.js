@@ -68,7 +68,13 @@ const getCss = (query, res) => {
 
 		(callback) => {
 			// use default css, go to next step if not found
-			fileName = 'practera.css';
+			if (query.domain == 'app.practera.com') {
+				// app.practera.com still use the old styling
+				fileName = 'practera.css';
+			} else {
+				// app-dev.practera.com & practera.app use the new styling
+				fileName = 'practera-v1.4.css';
+			}
 			checkCss(fileName, (url) => {
 				if (url) {
 					return res.status(200).json({
@@ -260,13 +266,16 @@ const getSass = (body, callback) => {
 		// get SASS files to local
 		(callback) => {
 			console.log('getting SCSS files...')
-			var params = {
+			let params = {
 				Bucket: "sass.practera.com",
 				Delimiter: (body.domain == 'appdev.practera.com') ? 'appv1/develop/ionic' : 'appv1/live/ionic'
 			}
-			console.log('params', params)
+			console.log(params)
 			s3.listObjects(params, (err, data) => {
-				console.log(data.Contents)
+				console.log('no. of keys:', data.Contents.length)
+				if (err) {
+					return console.err(err)
+				}
 			   	eachSeries(data.Contents, (obj, callback) => {
 			   		let fileName = obj.Key
 			   		let reqEnv = ''
@@ -524,22 +533,18 @@ function putFileInS3(params) {
 
 // this is for test only
 const test = (callback) => {
-	// var params = {
-	// 	Bucket: "sass.practera.com",
-	// 	Delimiter: 'appv1/ionic'
-	// };
-	// let file = fs.createWriteStream('./tmp/test.scss')
-	// s3.getObject({
+	// let params = {
 	//     Bucket: "sass.practera.com",
-	//     Key: 'appv1/list.scss'
-	// })
-	// .createReadStream()
-	// .pipe(file)
-	s3.getObject({
-	    Bucket: "css.practera.com",
-	    Key: 'appv1/css/appdev_practera_com-program-238.css'
-	}, callback);
-};
+	//     Delimiter: 'appv1/develop/ionic'
+	// }
+	// s3.listObjects(params, (err, data) => {
+	// 	console.log('no. of keys:', data.Contents.length)
+	// 	callback(err, data)
+	// });
+	callback(null, {
+		"GitHub_Token": process.env.GITHUB_TOKEN
+	})
+}
 
 module.exports = {
     getCss: getCss,
