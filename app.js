@@ -34,8 +34,18 @@ app.get('/', function(req, res) {
 	}
 
 	if (req.query.deployCheck) {
-		console.log('is it here?');
-        return action.checkDeployedSass();
+		return action.checkDeployedSass(req.body, (err, data) => {
+            if (err) {
+                res.status(401).json({
+                    'success': false,
+                    'err': err
+                })
+            }
+            res.status(200).json({
+                'success': true,
+                'data': data
+            })
+        });
     }
 
 	// check query data
