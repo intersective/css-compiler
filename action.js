@@ -12,6 +12,7 @@ const eachSeries = require('async/eachSeries');
 const fs = require('fs');
 const shell = require('shelljs');
 const s3 = new AWS.S3();
+const directoryPath = '/repos/jazzmind/practera-app/contents/scss';
 let gitToken = process.env.NODE_GITHUB_TOKEN || '';
 // root dir path
 let tmpDir = '/tmp';
@@ -394,13 +395,10 @@ const saveConfig = (body, callback) => {
  */
 const checkDeployedSass = (body, callback) => {
 
-	const directoryPath = '/repos/jazzmind/practera-app/contents/scss';
 	const isDevelop = body.domain === 'appdev.practera.com';
 	let s3Folder = isDevelop ? 'develop' : 'live';
 	let branch = isDevelop ? 'develop' : 'release/1.0';
 
-	console.log('is Develop?', isDevelop);
-	console.log('domain', body.domain);
     getDirectoryFromGithub(directoryPath, branch, function (directory) {
     	let compareFile = function (file) {
             const fileName = file.name;
@@ -446,7 +444,7 @@ const checkDeployedSass = (body, callback) => {
             });
             if (compile) {
             	console.log('we do need to compile');
-                //updateAll(body, callback);
+                updateAll(body, callback);
 			}
             else {
                 callback();
@@ -517,7 +515,6 @@ function getFileFromS3(key) {
         Bucket: "sass.practera.com",
         Key: key
 	};
-	console.log('key:-----', key);
 	return s3.getObject(params, function (err) {
         if (err)
         	console.log(err, err.stack); // an error occurred
