@@ -13,7 +13,7 @@ const fs = require('fs');
 const shell = require('shelljs');
 const s3 = new AWS.S3();
 const directoryPath = '/repos/jazzmind/practera-app/contents/scss';
-let gitToken = process.env.NODE_GITHUB_TOKEN || '';
+let gitToken = process.env.GITHUB_TOKEN || '';
 // root dir path
 let tmpDir = '/tmp';
 // env
