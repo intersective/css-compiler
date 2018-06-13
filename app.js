@@ -34,7 +34,7 @@ app.get('/', function(req, res) {
 	}
 
 	if (req.query.deployCheck) {
-		return action.checkDeployedSass(req.body, (err, data) => {
+		return action.checkDeployedSass(req.query, (err, data) => {
             if (err) {
                 res.status(401).json({
                     'success': false,
