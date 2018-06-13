@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const gulp = require('gulp');
 const sass = require('gulp-sass');
+const https = require("https");
 const rename = require('gulp-rename');
 const cleanCss = require('gulp-clean-css');
 const AWS = require('aws-sdk');
@@ -11,16 +12,19 @@ const eachSeries = require('async/eachSeries');
 const fs = require('fs');
 const shell = require('shelljs');
 const s3 = new AWS.S3();
-
+const directoryPath = '/repos/jazzmind/practera-app/contents/scss';
+let gitToken = process.env.NODE_GITHUB_TOKEN || '';
 // root dir path
-let tmpDir = '/tmp'
+let tmpDir = '/tmp';
 // env
-const ENV = app.get('env')
+const ENV = app.get('env');
 if (ENV === 'local') {
 	tmpDir = __dirname + '/tmp'
 }
-const configFile = tmpDir + '/source/scss/config.json'
-const scssDir = tmpDir + '/source/scss'
+const configFile = tmpDir + '/source/scss/config.json';
+const scssDir = tmpDir + '/source/scss';
+
+
 
 /**
  * Get the CSS according to program id & experience id & domain
@@ -365,7 +369,7 @@ const saveConfig = (body, callback) => {
 
 				  let base64data = new Buffer(data, 'binary');
 
-				  if (body.domain == 'appdev.practera.com') {
+				  if (body.domain === 'appdev.practera.com') {
 				  	reqEnv = 'develop'
 				  } else {
 				  	reqEnv = 'live'
@@ -381,6 +385,147 @@ const saveConfig = (body, callback) => {
 		}
 
 	], callback)
+}
+/**
+ * - Checks github for changes in the contents/scss folder against the scss folder in the S3 bucket
+ * - If a change is found, the changed file is replaced in the S3 folder and then the CSS is compiled
+ *
+ * @param body (domain)
+ * @param callback
+ */
+const checkDeployedSass = (body, callback) => {
+
+	const isDevelop = body.domain === 'appdev.practera.com';
+	let s3Folder = isDevelop ? 'develop' : 'live';
+	let branch = isDevelop ? 'develop' : 'release/1.0';
+
+    getDirectoryFromGithub(directoryPath, branch, function (directory) {
+    	let compareFile = function (file) {
+            const fileName = file.name;
+            const filePath = directoryPath + '/' + fileName;
+            const s3FilePath = 'appv1/'+ s3Folder + '/'  + fileName;
+            return new Promise(function (resolve, reject) {
+                //skip the folder 'ionic'
+                if(fileName !== 'ionic'){
+                    return getFileFromGithub(filePath, branch).then(function(gitFile) {
+                        return getFileFromS3(s3FilePath).then(function(data) {
+                            const s3File = data.Body.toString();
+
+                            if (s3File !== gitFile) {
+                            	console.log('s3File: ',s3File);
+                            	console.log('gitFile: ',gitFile);
+                                console.log('A file did change. File name: ', fileName);
+                                return putFileInS3({
+                                    Bucket: 'sass.practera.com',
+                                    Key: s3FilePath,
+                                    Body: gitFile
+                                }).then(function () {
+                                    resolve(true);
+                                });
+                            } else {
+                                resolve(false);
+                            }
+                        })
+                    });
+                } else {
+                	resolve(false);
+				}
+            });
+        };
+
+        let files = directory.map(compareFile);
+        let results = Promise.all(files);
+
+        results.then(function (data) {
+        	let compile = false;
+            console.log('data:', data);
+        	data.find(function (element) {
+        		compile = element ? true : element;
+            });
+            if (compile) {
+            	console.log('we do need to compile');
+                updateAll(body, callback);
+			}
+            else {
+                callback();
+			}
+        });
+
+    });
+};
+
+function getDirectoryFromGithub(path, ref, callback) {
+	let options = {
+        host: 'api.github.com',
+        path: path + '?ref=' + ref,
+        headers: {
+            'Authorization': 'token ' + gitToken,
+            'Accept': 'application/vnd.github.v3.raw',
+            'User-Agent': 'http://developer.github.com/v3/#user-agent-required)'
+        }
+
+    };
+
+    https.get(options, function (result) {
+        let body = '';
+        result.on('data', function(d) {
+            body += d;
+        });
+        result.on('end', function() {
+        	callback(JSON.parse(body));
+        });
+    }).on('error', function (err) {
+        console.log('Error, with: ' + err.message);
+    });
+}
+
+function getFileFromGithub(path, ref) {
+    let options = {
+        host: 'api.github.com',
+        path: path + '?ref=' + ref,
+		params: {
+            'ref': ref
+		},
+        headers: {
+            'Authorization': 'token ' + gitToken,
+            'Accept': 'application/vnd.github.v3.raw',
+            'User-Agent': 'http://developer.github.com/v3/#user-agent-required)'
+        }
+    };
+
+    return new Promise(function (resolve, reject) {
+        https.get(options, function (result) {
+            let body = '';
+            result.on('data', function(d) {
+                body += d;
+            });
+            result.on('end', function() {
+                resolve(body);
+            });
+        }).on('error', function (err) {
+            reject('Error, with: ' + err.message);
+        });
+    });
+
+
+}
+
+function getFileFromS3(key) {
+	const params = {
+        Bucket: "sass.practera.com",
+        Key: key
+	};
+	return s3.getObject(params, function (err) {
+        if (err)
+        	console.log(err, err.stack); // an error occurred
+	}).promise();
+}
+
+function putFileInS3(params) {
+	return s3.putObject(params, function (err) {
+        if (err)
+            console.log(err, err.stack); // an error occurred
+    }).promise();
 }
 
 // this is for test only
@@ -399,10 +544,11 @@ const test = (callback) => {
 }
 
 module.exports = {
-  getCss: getCss,
-  update: update,
-  updateAll: updateAll,
-  test: test
+    getCss: getCss,
+    update: update,
+    updateAll: updateAll,
+    test: test,
+    checkDeployedSass: checkDeployedSass
 }
 
 
