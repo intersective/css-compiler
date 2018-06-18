@@ -116,12 +116,9 @@ const checkCss = (fileName, callback) => {
 	  if (err && err.code === 'NotFound') {  
 	    return callback(false)
 	  } else {  
-	  	// // signed url will be expire after 1 week
-	  	// params.Expires = 3600 * 24 * 7
-	   //  return callback(s3.getSignedUrl('getObject', params));
-	   
-	   // return the link directly since it's public
-	   return callback('https://css.practera.app/appv1/css/' + fileName)
+	  	// signed url will be expire after 1 week
+	  	params.Expires = 3600 * 24 * 7
+	    return callback(s3.getSignedUrl('getObject', params));
 	  }
 	});
 }
@@ -205,8 +202,7 @@ const compile = (body, callback) => {
 				    Bucket: 'css.practera.com',
 				    Key: 'appv1/css/' + fileName,
 				    Body: base64data,
-				    ContentType: 'text/css',
-				    ACL: 'public-read'		// make the css file public
+				    ContentType: 'text/css'
 				  }, callback);
 
 				});
