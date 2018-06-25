@@ -11,8 +11,6 @@ app.use(bodyParser.json());
 
 app.get('/', function(req, res) {
 	// set header for CORS
-	console.log('it works!');
-	console.log(req.query);
 	res.set({
 		'Access-Control-Allow-Origin': '*',
 		'Access-Control-Allow-Methods': 'POST,GET,OPTIONS',
