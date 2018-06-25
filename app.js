@@ -17,6 +17,7 @@ app.get('/', function(req, res) {
         'Access-Control-Allow-Headers':'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,appkey'
     })
 	if (req.query.test) {
+		console.log('--test--')
 		return action.test((err, data) => {
 			if (err) {
 				res.status(401).json({
@@ -32,6 +33,7 @@ app.get('/', function(req, res) {
 	}
 
 	if (req.query.deployCheck) {
+		console.log('--deployCheck--')
 		return action.checkDeployedSass(req.query, (err, data) => {
             if (err) {
                 res.status(401).json({
@@ -53,6 +55,7 @@ app.get('/', function(req, res) {
 		    'msg': 'missing parameters'
 		});
 	} else {
+		console.log('--get CSS--')
         action.getCss(req.query, res)
     }
 });

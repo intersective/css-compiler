@@ -403,6 +403,8 @@ const checkDeployedSass = (body, callback) => {
 	let s3Folder = isDevelop ? 'develop' : 'live';
 	let branch = isDevelop ? 'develop' : 'release/1.0';
 
+	console.log('checking deployment for ' + body.domain + '...')
+
     getDirectoryFromGithub(directoryPath, branch, function (directory) {
     	let compareFile = function (file) {
             const fileName = file.name;
