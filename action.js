@@ -206,6 +206,7 @@ const compile = (body, callback) => {
 				    Key: 'appv1/css/' + fileName,
 				    Body: base64data,
 				    ContentType: 'text/css',
+				    CacheControl: 'max-age=0',	// do not cache it for cloudfront
 				    ACL: 'public-read'		// make the css file public
 				  }, callback);
 
