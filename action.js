@@ -211,22 +211,24 @@ const compile = (body, callback) => {
 				    ContentType: 'text/css',
 				    CacheControl: 'max-age=0',	// do not cache it for cloudfront
 				    ACL: 'public-read'		// make the css file public
-				  }, () => {
-				  	console.log('invalidating cloudfront...')
-				  	// invalidate the cloudfront
-				  	cloudfront.createInvalidation({
-					  DistributionId: DISTRIBUTION_ID, 
-					  InvalidationBatch: { 
-					    CallerReference: Date.now(), 
-					    Paths: { 
-					      Quantity: 1,
-					      Items: [
-					        'appv1/css/' + fileName
-					      ]
-					    }
-					  }
-					}, callback)
-				  })
+				  }, callback)
+				 //  () => {
+				 //  	console.log('invalidating cloudfront...')
+				 //  	// invalidate the cloudfront
+				 //  	let cloudfront = new AWS.CloudFront();
+				 //  	cloudfront.createInvalidation({
+					//   DistributionId: DISTRIBUTION_ID, 
+					//   InvalidationBatch: { 
+					//     CallerReference: Date.now(), 
+					//     Paths: { 
+					//       Quantity: 1,
+					//       Items: [
+					//         'appv1/css/' + fileName
+					//       ]
+					//     }
+					//   }
+					// }, callback)
+				  // })
 				})
 			}
 		}
