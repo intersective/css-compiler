@@ -226,8 +226,8 @@ const compile = (body, callback) => {
 					    }
 					  }
 					}, callback)
-
-				});
+				  })
+				})
 			}
 		}
 
