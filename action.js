@@ -13,7 +13,10 @@ const fs = require('fs');
 const shell = require('shelljs');
 const s3 = new AWS.S3();
 const directoryPath = '/repos/jazzmind/practera-app/contents/scss';
+// github token used to access front-end codebase
 let gitToken = process.env.GITHUB_TOKEN || '';
+// distribution id of cloudfront 'css.practera.app'
+let DISTRIBUTION_ID = process.env.DISTRIBUTION_ID || '';
 // root dir path
 let tmpDir = '/tmp';
 // env
@@ -208,7 +211,21 @@ const compile = (body, callback) => {
 				    ContentType: 'text/css',
 				    CacheControl: 'max-age=0',	// do not cache it for cloudfront
 				    ACL: 'public-read'		// make the css file public
-				  }, callback);
+				  }, () => {
+				  	console.log('invalidating cloudfront...')
+				  	// invalidate the cloudfront
+				  	cloudfront.createInvalidation({
+					  DistributionId: DISTRIBUTION_ID, 
+					  InvalidationBatch: { 
+					    CallerReference: Date.now(), 
+					    Paths: { 
+					      Quantity: 1,
+					      Items: [
+					        'appv1/css/' + fileName
+					      ]
+					    }
+					  }
+					}, callback)
 
 				});
 			}
