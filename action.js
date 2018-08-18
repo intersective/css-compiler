@@ -421,7 +421,7 @@ const checkDeployedSass = (body, callback) => {
 
 	const isDevelop = body.domain === 'appdev.practera.com';
 	let s3Folder = isDevelop ? 'develop' : 'live';
-	let branch = isDevelop ? 'develop' : 'release/1.0';
+	let branch = isDevelop ? 'develop' : 'release/V1';
 
 	console.log('checking deployment for ' + body.domain + '...')
 
