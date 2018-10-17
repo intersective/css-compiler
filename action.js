@@ -161,8 +161,13 @@ const update = (body, callback) => {
  * @return 
  */
 const compile = (body, callback) => {
-	let fileName = body.domain.replace(/\./g, '_').toLowerCase() + '-' + 
-				body.model.toLowerCase() + '-' + body.model_id  + '.css';
+	let fileName = '';
+	if (body.file_name) {
+		fileName = body.file_name;
+	} else {
+		fileName = body.domain.replace(/\./g, '_').toLowerCase() + '-' + 
+					body.model.toLowerCase() + '-' + body.model_id  + '.css';
+	}
 	let filePath = tmpDir + '/www/css/' + fileName;
 
 	async.waterfall([
